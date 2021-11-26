@@ -1,5 +1,6 @@
 export type onedriveItem = {
   id: string
+  path: string
   eTag: string
   shareURL: string
   directURL: string
@@ -68,8 +69,6 @@ const getAccess = async () => {
   return accessToken
 }
 
-
-
 type createResponse = {
   uploadUrl: string
 }
@@ -92,9 +91,13 @@ type shareResponse = {
   }
 }
 
-export const upload = async (id: string, data: Promise<Buffer>): Promise<onedriveItem> => {
+export const upload = async (
+  id: string,
+  filename: string,
+  data: Promise<Buffer>
+): Promise<onedriveItem> => {
   const accessToken = await getAccess()
-  const path = `/yitu/${id}/file`
+  const path = `/yitu/${id}/${filename}`
 
   const createRes = await fetch(
     `https://graph.microsoft.com/v1.0/me/drive/root:${path}:/createUploadSession`,
@@ -149,9 +152,10 @@ export const upload = async (id: string, data: Promise<Buffer>): Promise<onedriv
   const directURL = getDirectURL(shareURL)
   return {
     id: onedriveID,
+    path,
     eTag: uploadData.eTag,
     shareURL,
-    directURL
+    directURL,
   }
 }
 
