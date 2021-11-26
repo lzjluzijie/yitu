@@ -1,11 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next"
-import redis from "../lib/redis"
-import { upload } from "../lib/onedrive"
+import redis from "../../lib/redis"
+import crypto from "crypto"
+import { upload } from "../../lib/onedrive"
 import getRawBody from "raw-body"
-
-type Data = {
-  name: string
-}
 
 export const config = {
   api: {
@@ -13,16 +10,19 @@ export const config = {
   },
 }
 
-export default function handler(
+const handler = async (
   req: NextApiRequest,
-  res: NextApiResponse<Data>
-) {
+  res: NextApiResponse
+) => {
   const { method } = req
   if (method !== "POST") {
-    res.status(200).json({ name: "John Doe" })
+    res.status(405).json({ error: "method not allowed" })
     return
   }
 
-  console.log(typeof req.body)
-  upload(getRawBody(req))
+  const id = crypto.randomInt(58 ** 5).toString()
+  const body = getRawBody(req)
+  console.log(await upload(id, body))
 }
+
+export default handler

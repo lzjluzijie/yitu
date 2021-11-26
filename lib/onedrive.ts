@@ -1,4 +1,9 @@
-import crypto from "crypto"
+export type onedriveItem = {
+  id: string
+  eTag: string
+  shareURL: string
+  directURL: string
+}
 
 let refreshToken =
   process.env.REFRESH_TOKEN === undefined
@@ -63,13 +68,32 @@ const getAccess = async () => {
   return accessToken
 }
 
+
+
 type createResponse = {
   uploadUrl: string
 }
 
-export const upload = async (data: Promise<Buffer>) => {
+type uploadResponse = {
+  id: string
+  eTag: string
+  parentReference: {
+    id: string
+    path: string
+  }
+}
+
+type shareResponse = {
+  id: string
+  link: {
+    scope: string
+    type: string
+    webUrl: string
+  }
+}
+
+export const upload = async (id: string, data: Promise<Buffer>): Promise<onedriveItem> => {
   const accessToken = await getAccess()
-  const id = crypto.randomInt(58 ** 5).toString()
   const path = `/yitu/${id}/file`
 
   const createRes = await fetch(
@@ -104,5 +128,36 @@ export const upload = async (data: Promise<Buffer>) => {
     body: bytes,
   })
 
-  console.log(await uploadRes.text())
+  const uploadData: uploadResponse = await uploadRes.json()
+  const onedriveID = uploadData.id
+
+  const shareRes = await fetch(
+    `https://graph.microsoft.com/v1.0/me/drive/items/${onedriveID}/createLink`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `bearer ${accessToken}`,
+        "User-Agent": "yitu",
+        "Content-Type": "application/json",
+      },
+      body: '{"type":"view","scope":"anonymous"}',
+    }
+  )
+
+  const shareData: shareResponse = await shareRes.json()
+  const shareURL = shareData.link.webUrl
+  const directURL = getDirectURL(shareURL)
+  return {
+    id: onedriveID,
+    eTag: uploadData.eTag,
+    shareURL,
+    directURL
+  }
+}
+
+const getDirectURL = (shareURL: string): string => {
+  const arr = shareURL.split("/")
+  const shareID = arr.pop()
+  arr.splice(3, 2)
+  return arr.join("/") + "/_layouts/15/download.aspx?share=" + shareID
 }
