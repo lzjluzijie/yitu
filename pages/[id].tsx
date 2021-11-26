@@ -1,5 +1,6 @@
 import { GetServerSidePropsContext } from "next"
-import BASE58 from "../lib/base58"
+import { DEFAULT_ID_LENGTH, Item } from "../lib/item"
+import redis from "../lib/redis"
 
 const Redirector = () => <></>
 
@@ -10,14 +11,14 @@ export const getServerSideProps = async (
 ) => {
   if (context.params !== undefined) {
     const { id } = context?.params
-    if (typeof id === "string" && id.length === 5) {
-      const n = BASE58.decodeInt(id)
-      if (!isNaN(n)) {
-        console.log(n)
+    if (typeof id === "string" && id.length === DEFAULT_ID_LENGTH) {
+      const data = await redis.get(id)
+      if (data !== null) {
+        const item: Item = JSON.parse(data)
         return {
           redirect: {
             permanent: false,
-            destination: id,
+            destination: item.onedrive.directURL,
           },
         }
       }

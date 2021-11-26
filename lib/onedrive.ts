@@ -1,4 +1,4 @@
-export type onedriveItem = {
+export type OnedriveItem = {
   id: string
   path: string
   eTag: string
@@ -57,7 +57,7 @@ const update = async () => {
   accessToken = data.access_token
   refreshToken = data.refresh_token
   lastUpdated = Date.now()
-  console.log(data)
+  console.log("onedrive token refreshed")
 }
 
 const getAccess = async () => {
@@ -94,8 +94,8 @@ type shareResponse = {
 export const upload = async (
   id: string,
   filename: string,
-  data: Promise<Buffer>
-): Promise<onedriveItem> => {
+  data: Buffer
+): Promise<OnedriveItem> => {
   const accessToken = await getAccess()
   const path = `/yitu/${id}/${filename}`
 
@@ -115,8 +115,7 @@ export const upload = async (
   const createData: createResponse = await createRes.json()
   const { uploadUrl } = createData
 
-  const bytes = await data
-  const length = bytes.length
+  const length = data.length
 
   const uploadRes = await fetch(uploadUrl, {
     method: "PUT",
@@ -128,7 +127,7 @@ export const upload = async (
         length - 1
       ).toString()}/${length.toString()}`,
     },
-    body: bytes,
+    body: data,
   })
 
   const uploadData: uploadResponse = await uploadRes.json()
