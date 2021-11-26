@@ -11,17 +11,18 @@ export const config = {
   },
 }
 
-type Response =
-  | {
-      status: "success"
-      data: {
-        id: string
-      }
-    }
-  | {
-      status: "error"
-      error: string
-    }
+export type SuccessResponse = {
+  status: "success"
+  data: {
+    id: string
+  }
+}
+export type ErrorResponse = {
+  status: "error"
+  error: string
+}
+
+type Response = SuccessResponse | ErrorResponse
 
 const handler = async (req: NextApiRequest, res: NextApiResponse<Response>) => {
   const { method } = req
