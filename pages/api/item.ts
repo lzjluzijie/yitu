@@ -3,7 +3,7 @@ import getRawBody from "raw-body"
 import redis from "../../lib/redis"
 import { upload } from "../../lib/onedrive"
 import BASE58 from "../../lib/base58"
-import { DEFAULT_ID_LENGTH, Item } from "../../lib/item"
+import { DEFAULT_ID_LENGTH, Hash, hashFromBuffer, Item } from "../../lib/item"
 
 export const config = {
   api: {
@@ -15,6 +15,7 @@ export type SuccessResponse = {
   status: "success"
   data: {
     id: string
+    hash: Hash
   }
 }
 export type ErrorResponse = {
@@ -39,18 +40,23 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Response>) => {
     typeof req.headers["x-yitu-filename"] === "string"
       ? req.headers["x-yitu-filename"]
       : "file"
+
   const body = await getRawBody(req)
+
+  const hash = hashFromBuffer(body)
   const onedrive = await upload(id, filename, body)
   const item: Item = {
     id,
     size: body.length,
     filename,
     ip,
+    hash,
     onedrive,
     createdAt: Date.now(),
   }
+  console.log(item)
   redis.set(id, JSON.stringify(item))
-  res.status(200).json({ status: "success", data: { id } })
+  res.status(200).json({ status: "success", data: { id, hash } })
 }
 
 export default handler
