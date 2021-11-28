@@ -5,6 +5,8 @@ import { upload } from "../../lib/onedrive"
 import BASE58 from "../../lib/base58"
 import { DEFAULT_ID_LENGTH, Hash, hashFromBuffer, Item } from "../../lib/item"
 
+const SIZE_LIMIT = 100 * 1024 * 1024
+
 export const config = {
   api: {
     bodyParser: false,
@@ -41,7 +43,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Response>) => {
       ? req.headers["x-yitu-filename"]
       : "file"
 
-  const body = await getRawBody(req)
+  const body = await getRawBody(req, {
+    limit: SIZE_LIMIT,
+  })
 
   const hash = hashFromBuffer(body)
   const onedrive = await upload(id, filename, body)
