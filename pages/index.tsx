@@ -96,13 +96,13 @@ const StyledDropzone = () => {
     <div className="container">
       <div className="mt-2 mb-2" {...getRootProps({ style })}>
         <input {...getInputProps()} />
-        <p>Drag 'n' drop some files here, or click to select files</p>
+        <p>Drag and drop some files here, or click to select files</p>
       </div>
       <ul>
         {finished.map(({ filename, size, id }) => (
           <li key={id}>
             {filename}: {size} bytes{" "}
-            <a href={`/${id}`} target="_blank">
+            <a href={`/${id}`} target="_blank" rel="noreferrer">
               {id}
             </a>
           </li>
