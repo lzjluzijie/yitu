@@ -23,18 +23,18 @@ func (c *Config) Refresh() error {
 
 	resp, err := http.PostForm("https://login.microsoftonline.com/common/oauth2/v2.0/token", v)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	refreshResponse := &RefreshResponse{}
 	err = json.Unmarshal(data, refreshResponse)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	c.AccessToken = refreshResponse.AccessToken

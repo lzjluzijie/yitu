@@ -39,6 +39,7 @@ func NewServer(db *db.DB, onedrive *onedrive.Config) *Server {
 		onedrive: onedrive,
 	}
 	r.PUT("/upload", s.Upload)
+	r.GET("/s/:shortCode", s.Redirect)
 	return s
 }
 
